@@ -19,8 +19,9 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Connect to the Mongo DB
-mongoose.connect("mongodb://localhost/news-scraperdb", { useNewUrlParser: true });
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/news-scraper";
 
+mongoose.connect(MONGODB_URI);
 //website link
 const webLink = "https://www.nytimes.com/books/best-sellers/hardcover-fiction/?action=click&contentCollection=Books&referrer=https%3A%2F%2Fwww.nytimes.com%2Fsection%2Fbooks&region=Body&module=CompleteListLink&version=Fiction&pgtype=Reference";
 
@@ -35,13 +36,12 @@ app.get("/", (req,res) => {
 });
 
 app.get("/scrape", (req,res) => {
-   let results = [];
-
+   
    axios.get(webLink).then((response) => {
       const $ = cheerio.load(response.data);
-      
-
+   
       $(".book-menu li article .book-body").each( (i,element) => {
+
          //gets book title
          let title = $(element).find($(".title")).text();
          //gets book author
@@ -49,13 +49,25 @@ app.get("/scrape", (req,res) => {
          //gets book image
          let photo = $(element).parent("article").children("footer").children("div").find("img").attr("src");
 
-         results.push({
+         let result = {
             "title": title,
             "author":author,
              "photo": photo
-         });
+         };
+         if(db.Book.find({
+            "title":title,
+            "author":author
+         }) === undefined) {
+            db.Book.create(result)
+            .then((dbArticle) => {
+               console.log(dbArticle);
+            }).catch((err) => {
+               console.log(err);
+            });
+         }
       });
-   res.send(results);
+
+      res.send("Scrape Complete!")
    });
 });
 
