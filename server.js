@@ -19,33 +19,14 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Connect to the Mongo DB
-// mongoose.connect("mongodb://localhost/news-scraperdb", { useNewUrlParser: true });
+mongoose.connect("mongodb://localhost/news-scraperdb", { useNewUrlParser: true });
 
 //website link
 const webLink = "https://www.nytimes.com/books/best-sellers/hardcover-fiction/?action=click&contentCollection=Books&referrer=https%3A%2F%2Fwww.nytimes.com%2Fsection%2Fbooks&region=Body&module=CompleteListLink&version=Fiction&pgtype=Reference";
 
 axios.get(webLink).then((response) => {
 
-   const $ = cheerio.load(response.data);
-   let results = [];
-
-   // const book =$(".book-menu li article .book-body").html();
-   // const title = $(".book-menu li article .book-body h2").text();
-   // console.log(book);
-   // console.log(title);
-
-   $(".book-menu li article .book-body").each( (i,element) => {
-      let title = $(element).children("h2").text();
-      let author = $(element).children(".author").text().slice(3);
-      let photo = $(element).parent("article").children("footer").children("div").children("img").attr("src");
-      console.log(photo);
-      results.push({
-         "title": title,
-         "author":author,
-         // "photo": photo
-      });
-   });
-   console.log(results);
+   
 });
 
 //app routes
@@ -54,10 +35,29 @@ app.get("/", (req,res) => {
 });
 
 app.get("/scrape", (req,res) => {
-   axios.get(webLink).then((res) => {
+   let results = [];
 
+   axios.get(webLink).then((response) => {
+      const $ = cheerio.load(response.data);
+      
+
+      $(".book-menu li article .book-body").each( (i,element) => {
+         //gets book title
+         let title = $(element).find($(".title")).text();
+         //gets book author
+         let author = $(element).find(".author").text().slice(3);
+         //gets book image
+         let photo = $(element).parent("article").children("footer").children("div").find("img").attr("src");
+
+         results.push({
+            "title": title,
+            "author":author,
+             "photo": photo
+         });
+      });
+   res.send(results);
    });
-})
+});
 
 app.listen(PORT, () => {
    console.log(`App running on port ${PORT}`);
