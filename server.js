@@ -77,7 +77,7 @@ app.get("/scrape", (req,res) => {
             });
          });
       });
-      res.send("Scrape Complete!")
+      res.render("scrape");
    });
 
 app.listen(PORT, () => {
