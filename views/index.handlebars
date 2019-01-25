@@ -1,0 +1,14 @@
+<h1 class="text-center">New York Times Bestsellers!</h1>
+   <h4>Click Scrape To Get New Books!</h4>
+   <button class="btn-primary" onclick="location.href = './scrape' " id="scrape">Scrape</button>
+   <div class="card-columns" id="book-list">
+      {{#each books}}
+         <div class="card">
+            <img class="card-img-top" src={{this.photo}}>
+            <div class="card-body">
+               <h5 class="card-title">{{this.title}}</h5>
+               <p class="card-text">By {{this.author}}</p>
+            </div>
+         </div>
+      {{/each}}
+   </div>
